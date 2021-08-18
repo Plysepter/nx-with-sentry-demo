@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/Plysepter/nx-with-sentry-demo/compare/v0.1.1...v0.2.0) (2021-08-18)
+
+
+### Features
+
+* **apps:** trigger a new build ([815a642](https://github.com/Plysepter/nx-with-sentry-demo/commit/815a642bda4ff06fcbcb67c07e986ed78c430070))
+
 ## [0.1.1](https://github.com/Plysepter/nx-with-sentry-demo/compare/v0.1.0...v0.1.1) (2021-08-18)
 
 
