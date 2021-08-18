@@ -9,6 +9,7 @@ export class AppComponent implements OnInit {
   title = 'app-one';
 
   ngOnInit() {
+    // trigger new build
     throw new Error('Very suspicious error');
   }
 }

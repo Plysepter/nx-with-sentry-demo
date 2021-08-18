@@ -13,7 +13,6 @@ jobs:
       HUSKY: 0 # Skip commit checks when creating the release
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }} # Note this is pulling from our secrets we created earlier
       SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
       SOURCEMAP_PREFIX: 'dist/apps' # Our built apps will be placed within this folder, we use this to tell Sentry where it can find our sourcemaps
 
     steps:
