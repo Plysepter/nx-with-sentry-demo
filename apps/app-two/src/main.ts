@@ -10,7 +10,7 @@ if (environment.production) {
 }
 
 Sentry.init({
-  dsn: '',
+  dsn: 'https://af408ccd72ae4261887c763c1d833a53@o963353.ingest.sentry.io/5911671',
   // Sentry allows us to filter data by environment, this is to take advantage of that
   environment: environment.production ? 'Production' : 'Development',
   // Allow Sentry to report what release a bug or performance report came from
