@@ -1,0 +1,60 @@
+name: Release
+
+# This tells Github that we only want this to run when we manually trigger it
+on: workflow_dispatch
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      HUSKY: 0 # Skip commit checks when creating the release
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }} # Note this is pulling from our secrets we created earlier
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      SOURCEMAP_PREFIX: 'dist/apps' # Our built apps will be placed within this folder, we use this to tell Sentry where it can find our sourcemaps
+
+    steps:
+      - uses: actions/checkout@v2
+      # By default Github will only pull a shallow copy of the repo. To detect changes between the last release and this one, we request the full history
+      - run: git fetch --prune --unshallow
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Get latest release commit
+        run: echo "LAST_RELEASE=$(git describe --abbrev=0 --tags)" >> $GITHUB_ENV # Get the most recent release and store it as an environment variable
+
+      - name: Install dependencies
+        run: npm ci && npm i -D @sentry/cli
+
+      - name: Set additional environment variables
+        # Getting and storing the release version Sentry will use
+        run: echo "SENTRY_VERSION=$(./node_modules/.bin/sentry-cli releases propose-version)" >> $GITHUB_ENV
+
+      - name: Prep Sentry Release
+        run: echo "export const version = '$SENTRY_VERSION';" > .env.ts # Setting the new release version for our apps
+
+      - name: Build projects
+        # Compare the changes between the last release and most recent commit to only build apps that have changed
+        run: ./node_modules/.bin/nx affected --target=build --base=$LAST_RELEASE --head=HEAD -c production
+
+      - run: npm i -g semantic-release @semantic-release/{changelog,git}
+
+      - name: Package Deployment Files
+        # For now we do not have a hosting environment, so we will simply attach the built apps to the Github release
+        run: zip -r dist.zip ./dist
+
+      - name: Github Release
+        run: npx semantic-release
+
+      - name: Get new release
+        # Semantic release will bump the version in the package.json, we'll use this to tag the Sentry deploy
+        run: echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
+
+      - name: Sentry Release
+        run: ./sentry.sh
