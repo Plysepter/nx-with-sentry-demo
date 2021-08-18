@@ -20,14 +20,13 @@ done
 # Create a release
 $SENTRY_CLI releases -o $SENTRY_ORG new $SENTRY_PROJECT_ARGS $SENTRY_VERSION
 
-# Associate commits
-$SENTRY_CLI releases -o $SENTRY_ORG $SENTRY_PROJECT_ARGS set-commits $SENTRY_VERSION --auto
-
-# Upload source maps for each app
-echo Uploading sourcemaps for $AFFECTED_APPS
+# Sentry needs to upload the sourcemaps and commits for each app separately, so we do so in a loop
 for app in $AFFECTED_APPS
 do
-# Sentry needs to upload the sourcemaps for each app separately, so we do so in a loop
+# Associate commits
+$SENTRY_CLI releases -o $SENTRY_ORG -p $app set-commits $SENTRY_VERSION --auto
+
+# Upload source maps for each app
 $SENTRY_CLI releases -o $SENTRY_ORG -p $app files \
  $SENTRY_VERSION upload-sourcemaps $SOURCEMAP_PREFIX/$app
 done
@@ -37,4 +36,3 @@ $SENTRY_CLI releases finalize $SENTRY_VERSION
 # By passing the name as $NEW_VERSION we are linking the semantic release version to the Sentry release.
 # -e Production is telling Sentry we are deploying to the Production environment. For best results make sure the string matches that of that in your apps main.ts
 $SENTRY_CLI releases deploys $SENTRY_VERSION new -e Production --name $NEW_VERSION
-
